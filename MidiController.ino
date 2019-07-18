@@ -73,15 +73,17 @@ int potiValue2;
 int potiValue3;
 int potiValue4;
 
+bool button1State = false;
+bool button2State = false;
+bool button3State = false;
+bool button4State = false;
+
+
 bool button1Pressed;
 bool button2Pressed;
 bool button3Pressed;
 bool button4Pressed;
 
-bool button1State = false;
-bool button2State = false;
-bool button3State = false;
-bool button4State = false;
 
 
 bool sendMidiMessages;
@@ -101,8 +103,7 @@ void setup() {
   pinMode(BUTTON_LED_4_PIN, OUTPUT);
 
   //Light up all LEDs to test them
-  digitalWrite(BUTTON_LED_1_PIN, HIGH);
-  
+  digitalWrite(BUTTON_LED_1_PIN, HIGH); 
   delay(250);
   digitalWrite(BUTTON_LED_2_PIN, HIGH);
   delay(250);
@@ -130,7 +131,7 @@ void setup() {
   button3.interval(25);
   button4.interval(25);
 
-  wdt_enable( WDTO_1S);
+  //wdt_enable( WDTO_2S);
 }
 
 
@@ -156,55 +157,14 @@ void loop() {
   
   sendMidiMessages = false;
 
-  Serial.println("Poti 1: " + potiValue1);
-  Serial.print(", Poti 2: " + potiValue2);
-  Serial.print(", Poti 3: " + potiValue3);
-  Serial.print(", Poti 4: " + potiValue4);
-  Serial.println();
-  Serial.print("Button 1: " + button1Pressed);
-  Serial.print(", Button 2: " + button2Pressed);
-  Serial.print(", Button 3: " + button3Pressed);
-  Serial.print(", Button 4: " + button4Pressed);
+  
+  clearMidiPacketArray();
 
 
-  
-  clearMidiPacketArray(midiMessages);
-
-  
-  
-  if(currentValuePoti1 != potiValue1) {
-      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_1_CONTROL, potiValue1);
-     
-      sendMidiMessages = true;
-      midiMessageCounter++;
-    }
-  
-  if(currentValuePoti2 != potiValue2) {
-      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_2_CONTROL, potiValue2);
-      
-      sendMidiMessages = true;
-      midiMessageCounter++;
-    }
-  
-  if(currentValuePoti3 != potiValue3) {
-      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_3_CONTROL, potiValue3);
-    
-      sendMidiMessages = true;
-      midiMessageCounter++;
-    }
-  
-  if(currentValuePoti4 != potiValue4) {
-      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_4_CONTROL, potiValue4);
-    
-      sendMidiMessages = true;
-      midiMessageCounter++;
-    }
-
-
-    
   if(button1Pressed) {
       int value;
-      
+      //Serial.println("Button 1: ");
+      //erial.print(button1Pressed);
       if(button1State){
         button1State = false;
         value = MIDI_BUTTON_LOW;
@@ -225,7 +185,8 @@ void loop() {
   if(button2Pressed) {
 
       int value;
-      
+      //Serial.println("Button 2: ");
+      //Serial.print(button2Pressed);
       if(button2State){
         button2State = false;
         value = MIDI_BUTTON_LOW;
@@ -247,6 +208,8 @@ void loop() {
   if(button3Pressed) {
       int value;
       
+      //Serial.println("Button 3: ");
+      //Serial.print(button3Pressed); 
       if(button3State){
         button3State = false;
         value = MIDI_BUTTON_LOW;
@@ -266,7 +229,8 @@ void loop() {
     }
   if(button4Pressed) {
       int value;
-      
+      //Serial.println("Button 4: ");
+      //Serial.print(button4Pressed);
       if(button4State){
         button4State = false;
         value = MIDI_BUTTON_LOW;
@@ -288,13 +252,59 @@ void loop() {
     }
 
 
+
+  
+  
+  if(currentValuePoti1 != potiValue1) {
+      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_1_CONTROL, potiValue1);
+      //Serial.println("Poti 1: ");
+      //Serial.print(potiValue1);
+      sendMidiMessages = true;
+      midiMessageCounter++;
+      currentValuePoti1 = potiValue1;
+    }
+  
+  if(currentValuePoti2 != potiValue2) {
+      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_2_CONTROL, potiValue2);
+      //Serial.println("Poti 2: ");
+      //Serial.print(potiValue2);
+      sendMidiMessages = true;
+      midiMessageCounter++;
+      currentValuePoti2 = potiValue2;
+    }
+  
+  if(currentValuePoti3 != potiValue3) {
+      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_3_CONTROL, potiValue3);
+      //Serial.println("Poti 3: ");
+      //Serial.print(potiValue3);
+      sendMidiMessages = true;
+      midiMessageCounter++;
+      currentValuePoti3 = potiValue3;
+    }
+  
+  if(currentValuePoti4 != potiValue4) {
+      midiMessages[ midiMessageCounter ] = controlChange(MIDI_CHANNEL, POTI_4_CONTROL, potiValue4);
+      //Serial.println("Poti 4: ");
+      //Serial.print(potiValue4);
+      sendMidiMessages = true;
+      midiMessageCounter++;
+      currentValuePoti4 = potiValue4;
+    }
+    
+  
+
+
+    
+  
  if(sendMidiMessages){
 
   sendMidiPackages(midiMessages);
   MidiUSB.flush();
   
  }
-  wdt_reset();
+
+ delay(100);
+  //wdt_reset();
   
 }
 
@@ -303,8 +313,8 @@ void loop() {
 
 
 void sendMidiPackages ( midiEventPacket_t messages []){
-  if(messages != 0){
-    for(int i = 0; messages[i]  && i < MIDI_COMPONENTS ; i ++){
+  if(malloc(sizeof(messages)) != 0){
+    for(int i = 0; malloc(sizeof(messages[i])) != 0   && i < MIDI_COMPONENTS ; i++){
       MidiUSB.sendMIDI(messages[i]);
     }
   }
@@ -344,9 +354,11 @@ midiEventPacket_t controlChange(byte channel, byte control, byte value) {
 }
 
 
-void clearMidiPacketArray(midiEventPacket_t midiArray []){
-    for(int i = 0; midiArray[i] != 0 && i < MIDI_COMPONENTS ; i ++){
-      delete midiArray[i];
-      midiArray[i] = {};
-    }
+void clearMidiPacketArray(){
+  if(malloc(sizeof(midiMessages)) != 0){
+      for(int i = 0; malloc(sizeof(midiMessages[i])) != 0 && i < MIDI_COMPONENTS ; i++) {
+        //delete midiArray[i];
+        midiMessages[i] = {};
+      }
+  }
 }
